@@ -76,6 +76,17 @@
 
 ---
 
+## [AUTO] — Automatizaciones e IA
+
+- [P1] **Sistema de búsqueda de empleo / freelance**
+  - Monitoreo automático de ofertas en LinkedIn, Upwork, Workana, Torre.co, GetOnBrd
+  - Filtro por IA: stack relevante (desarrollo web, Node, React, etc.)
+  - Digest diario entregado en Outline o por notificación
+  - Alertas inmediatas para ofertas de alto match
+  - _Propósito: financiar NE-OS y escalar el proyecto_
+
+---
+
 ## IDEAS / LLUVIA
 
 *Todo lo que entra sin categoría definida. Se procesa y mueve arriba cuando madura.*
