@@ -34,6 +34,16 @@
 
 ---
 
+## Acceso remoto
+
+| Campo | Valor |
+|---|---|
+| SSH Client | OpenSSH 9.5p2 — instalado |
+| Llave pública | `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3soMJcuo3Wy9xwHgJmuaFDqCcWudJQpoxZ5cvDeTuL GRID-AI@NEON` |
+| Llave privada | `C:\Users\angel\.ssh\id_ed25519` |
+
+---
+
 ## Rol en la red
 
 **Core workstation y nodo central de NE-OS.**
