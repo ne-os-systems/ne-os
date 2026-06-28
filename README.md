@@ -42,11 +42,14 @@ C:\NE - OS\
 | Campo | Valor |
 |---|---|
 | Sistema | NE-OS |
+| Empresa | **NE-OS Arch Systems** |
+| Posicionamiento | Arquitectura de sistemas — diseñamos y construimos |
 | Nodo principal | `NEON` |
 | Arquitecto | Angel |
 | Inteligencia del sistema | GRID-AI |
 | Versión | 1.0 — *Origin* |
 | Fecha de fundación | 2026-06-19 |
+| Correo corporativo | `neos.arch.systems@gmail.com` |
 
 ---
 

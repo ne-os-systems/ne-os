@@ -1,7 +1,7 @@
 # NE-OS — Mapa de Red
 
 *Estado actual de la infraestructura de red doméstica NE-OS.*  
-*Última actualización: 2026-06-19*
+*Última actualización: 2026-06-27*
 
 ---
 
@@ -10,13 +10,13 @@
 ```
 INTERNET
     │
-[ROUTER / ISP]
+[ROUTER ARRIS — 192.168.1.254]
     │
-[Red Wi-Fi / Ethernet doméstica]
-    ├── NEON              → Core workstation — Lenovo Ryzen 5 (Wi-Fi)
-    ├── XENON             → AI Compute Node — Desktop i5 10th / GTX 1050 Ti
-    ├── HELIUM            → Servidor activo — HP EliteBook (Windows Server 2022)
-    └── NE-OS-ST-MOB-01   → Estación móvil — Acer Nitro 5 (Wi-Fi)
+[Red Wi-Fi / Ethernet doméstica — 192.168.1.0/24]
+    ├── NEON              192.168.1.1    Core workstation — Lenovo Ryzen 5 (Wi-Fi)
+    ├── HELIUM            192.168.1.12   Servidor Docker — HP EliteBook (Debian 13) ← IP FIJA
+    ├── XENON             Por asignar    AI Compute Node — Desktop i5 10th / GTX 1050 Ti
+    └── NE-OS-ST-MOB-01   Por asignar    Estación móvil — Acer Nitro 5 (Wi-Fi)
 ```
 
 ---
@@ -25,9 +25,9 @@ INTERNET
 
 | NE-OS ID | Rol | OS | IP local | Estado |
 |---|---|---|---|---|
-| `NEON` | Core workstation / NE-OS dev | Windows 11 Home | Por asignar | ACTIVO |
-| `XENON` | AI Compute Node / Gaming | Windows 10 → Dual boot (pendiente) | Por asignar | ACTIVO |
-| `HELIUM` | Servidor legacy | Windows Server 2022 | Por asignar | ACTIVO — sin rol |
+| `NEON` | Core workstation / NE-OS dev | Windows 11 Home | `192.168.1.1` | ACTIVO |
+| `HELIUM` | Servidor Docker — DNS, VPN, servicios | Debian 13 "Trixie" | `192.168.1.12` ← FIJA | ACTIVO — operativo |
+| `XENON` | AI Compute Node / Gaming | Windows → Dual boot pendiente | Por asignar | ACTIVO |
 | `NE-OS-ST-MOB-01` | Estación móvil secundaria | Windows 11 | Por asignar | ACTIVO |
 
 ---
@@ -36,7 +36,12 @@ INTERNET
 
 | Servicio | Nodo destino | Dirección | Descripción |
 |---|---|---|---|
-| Google Remote Desktop | `NEON` | — | Acceso desde empresa |
+| Google Remote Desktop | `NEON` | `192.168.1.1` | Acceso desde empresa |
+| SSH (GRID-AI@NEON) | `HELIUM` | `192.168.1.12:22` | Administración remota desde NEON |
+| AdGuard Home | `HELIUM` | `http://192.168.1.12` | Panel DNS — v0.107.77 |
+| DNS NE-OS | `HELIUM` | `192.168.1.12:53` | DNS interno para toda la red |
+| WireGuard VPN | `HELIUM` | `190.251.116.131:51820/UDP` | VPN accesible desde internet |
+| WireGuard Panel | `HELIUM` | `http://192.168.1.12:51821` | Panel wg-easy |
 
 ---
 
@@ -46,12 +51,17 @@ INTERNET
 - [x] Asignar nombres NE-OS a todos los dispositivos
 - [x] Registrar hardware de todos los nodos
 - [ ] Renombrar equipos en Windows al ID NE-OS correspondiente
-- [ ] Asignar IPs estáticas vía DHCP reservation en el router
+- [x] Asignar IP estática a HELIUM vía DHCP reservation — `192.168.1.12`
 
-### Fase 2 — Activar HELIUM
-- [ ] Definir rol definitivo para HELIUM (DNS / VPN / Monitoreo)
-- [ ] Configurar acceso RDP a HELIUM desde NEON
-- [ ] Registrar MAC de HELIUM y reservar IP estática
+### Fase 2 — Activar HELIUM ✅
+- [x] Instalar Debian 13 — servidor minimal sin GUI
+- [x] Configurar SSH con llave GRID-AI@NEON
+- [x] Instalar Docker 29.6.1
+- [x] Instalar AdGuard Home — DNS operativo en `192.168.1.12:53`
+- [x] Registrar MAC y reservar IP estática en router
+- [x] Instalar WireGuard VPN — operativo en `190.251.116.131:51820`
+- [ ] Instalar Outline (wiki)
+- [ ] Instalar Authentik (SSO)
 
 ### Fase 3 — Activar XENON como nodo AI
 - [ ] Instalar dual boot en XENON (Linux para AI + Windows para gaming)

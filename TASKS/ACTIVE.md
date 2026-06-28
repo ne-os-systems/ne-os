@@ -1,7 +1,7 @@
 # ACTIVE — Tareas en Ejecución
 
 *Máximo 3 tareas simultáneas. El foco es sagrado.*  
-*Última actualización: 2026-06-19*
+*Última actualización: 2026-06-27*
 
 ---
 
@@ -9,15 +9,15 @@
 
 | # | Tarea | Nodo | Prioridad | Inicio |
 |---|---|---|---|---|
-| 1 | Activar HELIUM como servidor base con Docker | `[HELIUM]` | P1 | 2026-06-19 |
+| 1 | Instalar Outline — base de conocimiento NE-OS | `[HELIUM]` | P1 | 2026-06-27 |
 
 ---
 
 ## Próximas (listas para iniciar cuando se libere slot)
 
-1. `[HELIUM]` Instalar AdGuard Home — DNS para toda la red
-2. `[HELIUM]` Instalar WireGuard — VPN para acceso remoto
-3. `[AUTO]` Sistema de búsqueda de empleo / freelance con IA
+1. `[AUTO]` Sistema de búsqueda de empleo / freelance con IA
+2. `[HELIUM]` Instalar Authentik — SSO para todos los servicios
+3. `[RED]` Configurar AdGuard como DNS en toda la red (router + TVs)
 
 ---
 

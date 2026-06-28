@@ -85,12 +85,32 @@ Todos los dispositivos de red llevan el prefijo `NE-OS-` seguido del tipo y núm
 
 ---
 
+## Dispositivos personales — NE-OS-PH / NE-OS-TV
+
+### Teléfonos — `NE-OS-PH-[NN]`
+
+| Nombre | Dispositivo | Propietario |
+|---|---|---|
+| `NE-OS-PH-01` | Teléfono personal | Principal (tú) |
+| `NE-OS-PH-02` | Teléfono personal | Secundario (esposa) |
+
+### Televisores — `NE-OS-TV-[NN]`
+
+| Nombre | Dispositivo | Sistema |
+|---|---|---|
+| `NE-OS-TV-01` | TV Kalley | Sistema propietario |
+| `NE-OS-TV-02` | TV Hyundai | Google TV |
+
+---
+
 ## Resumen de la convención
 
 ```
 Servidores   →  [GAS NOBLE]                →  NEON / HELIUM / ARGON / KRYPTON / XENON / RADON
-Estaciones   →  NE-OS-ST-[ROL]-[NN]       →  NE-OS-ST-DEV-01
+Estaciones   →  NE-OS-ST-[ROL]-[NN]       →  NE-OS-ST-DEV-01 / NE-OS-ST-MOB-01
 Red          →  NE-OS-[TIPO]-[NN]          →  NE-OS-GW / NE-OS-SW-01 / NE-OS-AP-01
+Teléfonos    →  NE-OS-PH-[NN]             →  NE-OS-PH-01 / NE-OS-PH-02
+Televisores  →  NE-OS-TV-[NN]             →  NE-OS-TV-01 / NE-OS-TV-02
 ```
 
 ---
