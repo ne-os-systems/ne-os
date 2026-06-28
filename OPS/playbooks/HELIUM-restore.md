@@ -4,7 +4,7 @@
 
 **Nodo:** HELIUM — HP EliteBook 2560p  
 **OS objetivo:** Debian 13 "Trixie" minimal server  
-**Última actualización:** 2026-06-27  
+**Última actualización:** 2026-06-28  
 
 ---
 
@@ -211,13 +211,231 @@ Panel: `http://192.168.1.12:51821`
 Credenciales: ver `credenciales.md`  
 Puerto a abrir en router: `51820/UDP`
 
-- [ ] Outline (wiki)
-- [ ] Authentik (SSO)
+### 3.4 Red Docker compartida
+
+```bash
+sudo docker network create ne-os
+```
+
+Todos los servicios que se comunican entre sí deben usar esta red (`external: true` en cada compose).
+
+### 3.5 FreeDNS (actualizador de IP dinámica)
+
+```bash
+mkdir -p /opt/ne-os/freedns
+cat > /opt/ne-os/freedns/docker-compose.yml << 'EOF'
+services:
+  freedns:
+    image: alpine:latest
+    container_name: freedns
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    command: >
+      sh -c "while true; do
+        wget -qO- 'https://freedns.afraid.org/dynamic/update.php?<TOKEN_NEOS>';
+        sleep 300;
+      done"
+EOF
+cd /opt/ne-os/freedns && sudo docker compose up -d
+```
+
+Token en `credenciales.md` → sección FreeDNS.
+
+### 3.6 Caddy (reverse proxy HTTPS)
+
+```bash
+mkdir -p /opt/ne-os/caddy/{data,config}
+cat > /opt/ne-os/caddy/Caddyfile << 'EOF'
+ne-os.mooo.com {
+    reverse_proxy outline:3000
+}
+
+neosvault.mooo.com {
+    reverse_proxy vaultwarden:80
+}
+EOF
+
+cat > /opt/ne-os/caddy/docker-compose.yml << 'EOF'
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./data:/data
+      - ./config:/config
+    networks:
+      - ne-os
+
+networks:
+  ne-os:
+    external: true
+EOF
+cd /opt/ne-os/caddy && sudo docker compose up -d
+```
+
+Caddy obtiene certificados Let's Encrypt automáticamente. Requiere que los dominios ya resuelvan a la IP pública.
+
+### 3.7 AdGuard (versión corregida — puerto 8080)
+
+> El puerto 80 lo usa Caddy. AdGuard va en 8080.
+
+```bash
+cat > /opt/ne-os/adguard/docker-compose.yml << 'EOF'
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    restart: unless-stopped
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '3000:3000/tcp'
+      - '8080:80/tcp'
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+EOF
+cd /opt/ne-os/adguard && sudo docker compose up -d
+```
+
+Panel: `http://192.168.1.12:8080`
+
+### 3.8 Outline (wiki)
+
+```bash
+mkdir -p /opt/ne-os/outline
+cat > /opt/ne-os/outline/docker-compose.yml << 'EOF'
+services:
+  outline:
+    image: outlinewiki/outline:latest
+    container_name: outline
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    environment:
+      - SECRET_KEY=<ver credenciales.md>
+      - UTILS_SECRET=<ver credenciales.md>
+      - DATABASE_URL=postgres://outline:outline@postgres:5432/outline?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - URL=https://ne-os.mooo.com
+      - FORCE_HTTPS=true
+      - GITHUB_CLIENT_ID=<ver credenciales.md>
+      - GITHUB_CLIENT_SECRET=<ver credenciales.md>
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=<ver credenciales.md>
+      - AWS_REGION=us-east-1
+      - AWS_S3_UPLOAD_BUCKET_URL=http://outline-minio:9000
+      - AWS_S3_UPLOAD_BUCKET_NAME=outline
+      - AWS_S3_FORCE_PATH_STYLE=true
+      - FILE_STORAGE=s3
+    networks:
+      - ne-os
+  postgres:
+    image: postgres:16
+    container_name: outline-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=outline
+      - POSTGRES_PASSWORD=outline
+      - POSTGRES_DB=outline
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      - ne-os
+  redis:
+    image: redis:7
+    container_name: outline-redis
+    restart: unless-stopped
+    networks:
+      - ne-os
+  minio:
+    image: minio/minio
+    container_name: outline-minio
+    restart: unless-stopped
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=<ver credenciales.md>
+    volumes:
+      - ./minio:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - ne-os
+
+networks:
+  ne-os:
+    external: true
+EOF
+cd /opt/ne-os/outline && sudo docker compose up -d
+```
+
+URL: `https://ne-os.mooo.com` — login con GitHub (`ne-os-systems`)
+
+### 3.9 Vaultwarden (gestor de contraseñas)
+
+```bash
+mkdir -p /opt/ne-os/vaultwarden
+cat > /opt/ne-os/vaultwarden/docker-compose.yml << 'EOF'
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://neosvault.mooo.com
+      - SIGNUPS_ALLOWED=true
+    volumes:
+      - ./data:/data
+    networks:
+      - ne-os
+
+networks:
+  ne-os:
+    external: true
+EOF
+cd /opt/ne-os/vaultwarden && sudo docker compose up -d
+```
+
+URL: `https://neosvault.mooo.com`
+> Después de crear la primera cuenta, cambiar `SIGNUPS_ALLOWED=true` a `false` y reiniciar.
+
+---
+
+## Configuración del router ARRIS (Tigo)
+
+Panel: `192.168.1.254` — credenciales en `credenciales.md`
+
+### DHCP Reservation
+| Nombre | IP | MAC |
+|---|---|---|
+| helium | 192.168.1.12 | 2C:41:38:12:6F:53 |
+
+### Port Forwarding (Virtual Servers)
+| Nombre | Puerto externo | Protocolo | IP destino | Puerto interno |
+|---|---|---|---|---|
+| WireGuard | 51820 | UDP | 192.168.1.12 | 51820 |
+| HELIUMHTTP | 80 | TCP | 192.168.1.12 | 80 |
+| HELIUMHTTPS | 443 | TCP | 192.168.1.12 | 443 |
+
+> Puerto 80 y 443: necesarios para HTTPS (Caddy + Let's Encrypt)
+> Puerto 51820 UDP: VPN WireGuard
 
 ---
 
 ## Notas
 
-- IP local actual: `192.168.1.12` (DHCP — asignar reserva estática en el router)
-- Si la IP cambia, escanear la red: `nmap -sn 192.168.1.0/24` desde NEON
+- Si la IP pública cambia, WireGuard seguirá funcionando porque FreeDNS actualiza el dominio automáticamente. Actualizar `WG_HOST` en wireguard compose si se migra a dominio.
 - Las credenciales están en `C:\NE - OS\credenciales.md` — nunca en git
+- Backup de datos de servicios: `/opt/ne-os/*/` en HELIUM
